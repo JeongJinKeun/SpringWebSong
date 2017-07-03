@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>Daum에디터 - 이미지 첨부</title> 
+	<link rel="stylesheet" href="/js/common/daumEditor/css/popup.css" type="text/css"  charset="utf-8"/>
+	<script type="text/javascript" src="/js/common/jquery/jquery-1.12.4.js"></script>
+	<script type="text/javascript" src="/js/common/jquery/jquery.form.js"></script>
+	<script type="text/javascript" src="/js/common/daumEditor/js/popup.js"  charset="utf-8"></script>
+	
+	<script type="text/javascript">
+            
+        $(document).ready(function(){
+        	// 업로드 초기화
+        	initUploader();
+        	
+			// ajax form 파일 업로드 - form submit시 아래 함수 실행됨
+			$('#imgForm').ajaxForm({
+				beforeSubmit: function (data,form,option) {
+					//validation체크 
+					if($("#file").val() == ""){
+						alert("이미지 파일을 선택 해주세요.");
+						return false;
+					}
+					return true;
+				},
+				success: function(response,status){
+					//성공후 서버에서 받은 데이터 처리
+					done(response);
+				},
+				error: function(){
+					//에러발생을 위한 code페이지
+					alert("error!!");
+				}
+			});
+		});
+	
+        // form submit - ajax image upload
+		function uploadImg() {
+			$("#imgForm").submit();
+		}
+
+        // 업로드 완료 후 에디터에 이미지 경로 셋팅 및 업로드 팝업창 닫기
+		function done( response ) {
+			
+			if (typeof(execAttach) == 'undefined') { //Virtual Function
+		        return;
+		    }
+			
+			var _mockdata = {
+				'imageurl': response.imageurl,
+				'filename': response.filename,
+				'filesize': response.filesize,
+				'imagealign': response.imagealign,
+				'imgWidth':response.imgWidth,
+				'imgHeight':response.imgHeight
+			};
+			execAttach(_mockdata);
+			closeWindow();
+		}
+
+        // 업로드 셋팅
+		function initUploader(){
+		    var _opener = PopupUtil.getOpener();
+		    if (!_opener) {
+		        alert('잘못된 경로로 접근하셨습니다.');
+		        return;
+		    }
+		    var _attacher = getAttacher('image', _opener);
+		    registerAction(_attacher);
+		}
+
+        // 이미지 파일만 업로드 할 수 있게 체크하기
+        function imgCheck() {
+			if(event.srcElement.value){
+				if($("#file").val().toLowerCase().match(/(.jpg|.jpeg|.gif|.png)/)){
+				}else{
+					alert("이미지 파일을 선택하세요.")
+					$("#file").val("");
+					return false;
+				}
+			}
+        }
+	</script>
+</head>
+<body>
+	<div class="wrapper">
+		<div class="header">
+			<h1>사진 첨부</h1>
+		</div>	
+		<div class="body">
+			<dl class="alert">
+			    <dt>사진 첨부 확인</dt>
+			    <dd>
+			    	<form id="imgForm" action="/common/uploadDaumEditorImg.do" enctype="multipart/form-data" method="post">
+			    		<input type="file" id="file" name="file" accept="image/*" />
+<!-- 			    		<input type="file" id="file" name="file" accept="image/*" onchange="imgCheck()"/> -->
+			    	</form>
+				</dd>
+			</dl>
+		</div>
+		<div class="footer">
+			<p><a href="#" onclick="closeWindow();" title="닫기" class="close">닫기</a></p>
+			<ul>
+				<li class="submit"><a href="#" onclick="uploadImg(); return false;" title="등록" class="btnlink">등록</a> </li>
+				<li class="cancel"><a href="#" onclick="closeWindow();" title="취소" class="btnlink">취소</a></li>
+			</ul>
+		</div>
+	</div>
+	
+</body>
+</html>

@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.test.web.member.dao.MemberDao">
+    
+    <sql id="memberColumns">
+        no, 
+        member_id AS memberId, 
+        member_pw AS memberPw,
+	    member_name AS memberName, 
+	    member_age AS memberAge,
+	    member_area AS memberArea, 
+	    member_hp AS hp,
+	    member_sex AS memberSex,
+	    token
+    </sql>
+    
+    
+	<!-- 회원정보 1건 조회 -->
+	<select id="selectMember" resultType="memberBean" parameterType="memberBean">
+	    SELECT
+	    	<include refid="memberColumns"/>
+	    FROM
+	    	member
+	    WHERE
+  			member_id = #{memberId} 
+  			<if test="memberPw != null and memberPw != ''">
+  				AND member_pw=PASSWORD(#{memberPw})
+  			</if>
+	</select>
+	
+	
+	<!-- 회원정보 리스트 전체 갯수 조회 -->
+	<select id="selectMemberListTotalCount" resultType="int">
+	    SELECT COUNT(*) FROM member
+	</select>
+	
+	
+	<!-- 회원정보 List 조회 -->
+	<select id="selectMemberList" resultType="memberBean">
+	    SELECT
+	    	<include refid="memberColumns"/>
+	    FROM
+	    	member
+	    LIMIT #{pagingBean.startRow}, #{pagingBean.endRow}
+	</select>
+	
+	<!-- 회원정보 1건 저장 -->
+	<insert id="insertMember" parameterType="memberBean">
+	    INSERT INTO member
+ 		(
+ 			member_id, 
+ 			member_pw, 
+ 			member_name, 
+ 			member_age,
+ 			member_area,
+ 			member_hp,
+ 			member_sex
+ 		)
+		VALUES
+ 		(
+ 			#{memberId}, 
+ 			PASSWORD(#{memberPw}), 
+ 			#{memberName}, 
+ 			#{memberAge},
+ 			#{memberArea},
+ 			#{hp},
+ 			#{memberSex}
+ 		)
+ 		
+ 		<selectKey order="AFTER" keyProperty="no" resultType="string">
+ 		    SELECT LAST_INSERT_ID()
+ 		</selectKey>
+	</insert>
+	
+	<!-- 회원정보 수정 -->
+	<update id="updateMember" parameterType="memberBean">
+		UPDATE member SET
+			member_id = #{memberId}
+			<if test="memberPw != null and memberPw != ''">
+			    ,member_pw = PASSWORD(#{memberPw})
+			</if>
+			<if test="memberName != null and memberName != ''">
+				,member_name = #{memberName}
+			</if>
+			<if test="memberAge != null and memberAge != ''">
+				,member_age = #{memberAge}
+			</if>
+			<if test="memberArea != null and memberArea != ''">
+				,member_area = #{memberArea}
+			</if>
+			<if test="hp != null and hp != ''">
+				,member_hp = #{hp}
+			</if>
+			<if test="memberSex != null and memberSex != ''">
+				,member_sex = #{memberSex}
+			</if>
+			<if test="token != null and token != ''">
+				,token = #{token}
+			</if>
+		WHERE
+			member_id = #{memberId}
+	</update>
+	
+	<!-- 회원정보 삭제 -->
+	<delete id="deleteMember" parameterType="memberBean">
+	    DELETE FROM 
+	    	member
+	    WHERE
+	    	member_id = #{memberId}
+	</delete>
+	
+	
+
+</mapper>

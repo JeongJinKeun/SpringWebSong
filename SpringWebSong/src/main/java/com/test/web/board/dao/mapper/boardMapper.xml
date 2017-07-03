@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.test.web.board.dao.BoardDao">
+    
+    <sql id="boardColumns">
+		no,
+		member_id AS memberId,
+		title,
+		content,
+		reg_date AS regDate
+    </sql>
+    
+    
+	<!-- 게시글 정보 1건 조회 -->
+	<select id="selectBoard" resultType="boardBean" parameterType="boardBean">
+	    SELECT
+	    	<include refid="boardColumns"/>,
+	    	(SELECT member_name 
+	    	 FROM 
+	    	 	member 
+	    	 WHERE 
+	    		member.member_id = board.member_id) AS memberName,
+	    	(SELECT COUNT(*) FROM board_reply WHERE board_no=board.no) AS replyTotCount
+	    FROM
+	    	board
+	    WHERE
+  			no = #{no}
+	</select>
+	
+	<!-- 회원정보 List 조회 -->
+	<select id="selectBoardList" resultType="boardBean" parameterType="pagingBean">
+	    SELECT
+	    	<include refid="boardColumns"/>
+	    FROM
+	    	board
+	    WHERE
+	    	1=1
+	    	<if test="searchType == 'id'">
+	    	    AND member_id like CONCAT('%', #{searchText}, '%')
+	    	</if>
+	    LIMIT #{startRow}, #{endRow}
+	</select>
+	
+	<!-- 전체 레코드 갯수 조회 -->
+	<select id="selectBoardListTotalCount" resultType="int" parameterType="pagingBean">
+	    SELECT 
+	    	COUNT(*) 
+	    FROM 
+	    	board
+	    WHERE
+	    	1=1
+	    	<if test="searchType == 'id'">
+	    	    AND member_id like CONCAT('%', #{searchText}, '%')
+	    	</if>
+	</select>
+	
+	<insert id="insertBoard" parameterType="boardBean">
+	    INSERT INTO board
+	    (
+	    	member_id,
+	    	title,
+	    	content
+	    )
+	    VALUES
+	    (
+	    	#{memberId},
+	    	#{title},
+	    	#{content}
+	    )
+	    <selectKey order="AFTER" keyProperty="no" resultType="string">
+	        SELECT LAST_INSERT_ID()
+	    </selectKey>
+	</insert>
+	
+	<!-- 게시글 이미지 등록 -->
+	<insert id="insertBoardImg" parameterType="boardImgBean">
+		INSERT INTO board_img
+		(
+			bd_no,
+			img_path,
+			img_origin_name,
+			img_size
+		) VALUES (
+			#{bdNo},
+			#{imgPath},
+			#{imgOriginName},
+			#{imgSize}
+		)
+	</insert>
+
+</mapper>
